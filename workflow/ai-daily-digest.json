@@ -1,0 +1,122 @@
+{
+  "name": "9AM IST AI Daily Digest (Arxiv + GitHub + News)",
+  "nodes": [
+    {
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [200, 300],
+      "parameters": {
+        "cronExpression": "0 9 * * *",
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    {
+      "name": "Fetch Arxiv Papers",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [500, 120],
+      "parameters": {
+        "method": "GET",
+        "url": "https://export.arxiv.org/api/query",
+        "description": "Fetch latest AI/ML research papers"
+      }
+    },
+    {
+      "name": "Fetch AI News",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [500, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "https://newsapi.org/",
+        "description": "Fetch trending AI and tech news"
+      }
+    },
+    {
+      "name": "Fetch Trending GitHub Repos",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [500, 480],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/",
+        "description": "Fetch trending GitHub repositories"
+      }
+    },
+    {
+      "name": "Groq AI Summarizer",
+      "type": "n8n-nodes-base.llm",
+      "position": [850, 300],
+      "parameters": {
+        "provider": "Groq",
+        "model": "llama3",
+        "task": "Summarize content into concise digest"
+      }
+    },
+    {
+      "name": "Telegram Delivery",
+      "type": "n8n-nodes-base.telegram",
+      "position": [1150, 300],
+      "parameters": {
+        "operation": "sendMessage",
+        "description": "Send summarized digest to Telegram users"
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Arxiv Papers"
+          },
+          {
+            "node": "Fetch AI News"
+          },
+          {
+            "node": "Fetch Trending GitHub Repos"
+          }
+        ]
+      ]
+    },
+    "Fetch Arxiv Papers": {
+      "main": [
+        [
+          {
+            "node": "Groq AI Summarizer"
+          }
+        ]
+      ]
+    },
+    "Fetch AI News": {
+      "main": [
+        [
+          {
+            "node": "Groq AI Summarizer"
+          }
+        ]
+      ]
+    },
+    "Fetch Trending GitHub Repos": {
+      "main": [
+        [
+          {
+            "node": "Groq AI Summarizer"
+          }
+        ]
+      ]
+    },
+    "Groq AI Summarizer": {
+      "main": [
+        [
+          {
+            "node": "Telegram Delivery"
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "description": "Automated AI daily digest delivering research papers, AI news, and trending GitHub repositories to Telegram every day at 9 AM IST.",
+    "author": "Shubham Sharma",
+    "version": "1.0.0",
+    "license": "MIT"
+  }
+}
